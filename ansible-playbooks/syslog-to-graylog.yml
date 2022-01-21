@@ -1,15 +1,33 @@
----
-- name: Add remote graylog server to syslog.conf
-  hosts: "*"
+# --------------------------
+# Ansible Playbook
+# Configure unix daemon services for rsyslog
+# Creates pipeline into Graylog from client endpoints
+# systemd: rsyslog.unit
+# taken from: https://quant.one/gain-control-over-log-events-with-graylog-and-ansible
+# --------------------------
+
+- hosts: all
   remote_user: root
+  become: yes
 
   tasks:
-  - name: Add extra entry of elklog server to syslog.conf
-    lineinfile: dest=/etc/syslog.conf backup=yes line="*.info;mail.none;authpriv.none;cron.none;*.emerg;local7.* @10.128.128.104:514" state=present
-    notify:
-    - restart syslog
+    - name: Configure services for ryslog
+      block:
+        - name: Install rsyslog
+          apt:
+            name: rsyslog
+            state: present
 
-  handlers:
-  - name: restart syslog
-    service: name=syslog state=restarted
-  
+        - name: Set Default Config Params
+          copy:
+            src: rsyslog.conf
+            dest: /etc/rsyslog.conf
+            force: true
+
+        - name: Configure System Service
+          systemd:
+            name: rsyslog
+            enabled: yes
+            state: started
+
+# --------------------------
