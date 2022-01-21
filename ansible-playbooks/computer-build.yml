@@ -1,0 +1,143 @@
+#
+# For reconfiguring computers
+#
+
+- hosts: laptopmini:!unreachable
+  name: laptopmini
+  become: yes
+  roles:
+    - role: server
+    - role: upgrade
+    - role: smarttest
+
+    - role: aptrepo
+      aptrepo_url: http://dl.google.com/linux/chrome/deb/
+      aptrepo_params:
+        Suites: stable
+      aptrepo_source_file: /etc/apt/sources.list.d/google-chrome.sources
+      aptrepo_key_url: https://dl.google.com/linux/linux_signing_key.pub
+      aptrepo_key_file: /usr/share/keyrings/google-archive-keyring.gpg
+
+    - role: packages
+      packages_install:
+        # Desktop apps
+        - smplayer
+        - vlc
+        - transgui
+        - audacious
+        - google-chrome-stable
+        - remmina
+        - virt-viewer
+        - virt-manager
+        - simple-scan
+        - gscan2pdf
+
+        # Desktop environment
+        - task-xfce-desktop
+        - fonts-cantarell
+        - numix-gtk-theme
+        - xclip
+        # xfwm4-themes   # Removed from Buster repos
+        - gvfs-backends  # Android file transfer over USB
+        - rar
+        - unrar
+        - aspell-ru
+        - hunspell-ru
+        - myspell-ru
+
+        # Interactive shell
+        - git
+        - make
+        - tmux
+        - bc # used in my Tmux config
+        - ncurses-term  # enables TERM=screen.xterm-new in tmux
+        - vim-gtk3  # GUI build has more stuff enabled at compile time
+        - curl
+        - tree
+        - asciinema
+
+        # System administration
+        - ansible
+        - sshpass  # required to deploy new bare metal hosts with Ansible
+        - nmap
+        - psmisc
+        - smartmontools
+        - sysbench  # buster-backports
+        - iotop
+        - iperf3
+        - rsync
+        - nfs-common
+        - cu  # tty console client
+
+        # Hardware support
+        - firmware-atheros
+        - firmware-linux
+        - firmware-linux-free
+        - firmware-linux-nonfree
+        # i965-va-driver  # h264 vaapi <https://wiki.debian.org/HardwareVideoAcceleration>
+        - i965-va-driver-shaders  # non-free version with more codecs
+        - nvidia-driver
+
+        # Laptop optimisation
+        - acpi-support
+        - cpufrequtils
+        - tlp
+        - tlp-rdw
+
+    - role: interactive
+      interactive_user: user
+
+    - role: munin_node
+    - role: munin_smart
+      munin_smart_params: 5 187 197 198  # 188 is meaningless for this drive
+
+    - role: grub
+      grub_kernel_params:
+        # Boot time user facing output
+        - quiet
+        - splash
+        # Low RAM workaround
+        - zswap.enabled=1
+        - zswap.compressor=lz4
+        - zswap.zpool=z3fold
+        - zswap.max_pool_percent=40
+        # Attempt to fix Ethernet errors after suspend
+        # https://www.linux.org.ru/forum/general/15842902
+        - irqpoll
+    - role: initrd
+      modules:
+        # Intel kernel modesetting in initramfs
+        - intel_agp
+        - drm
+        - i915 modeset=1
+        # Enable zswap
+        - lz4
+        - lz4_compress
+        - z3fold
+
+    # Strict ssh key management
+    - role: sshkey
+
+  pre_tasks:
+    - name: enable non-free repository
+      apt_repository:
+        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }} main contrib non-free'
+        state: present
+        mode: '0644'
+
+    - name: enable backports repo
+      apt_repository:
+        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main'
+        state: present
+        mode: '0644'
+      when: ansible_distribution_release == 'buster'
+
+  tasks:
+    - name: enable passwordless sudo for user
+      copy:
+        content: |
+          user ALL=(ALL) NOPASSWD:ALL
+        dest: /etc/sudoers.d/user
+        validate: visudo -cf %s
+        mode: '0440'
+        backup: yes
