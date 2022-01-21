@@ -74,26 +74,5 @@
     # Strict ssh key management
     - role: sshkey
 
-  pre_tasks:
-    - name: enable non-free repository
-      apt_repository:
-        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }} main contrib non-free'
-        state: present
-        mode: '0644'
-
-    - name: enable backports repo
-      apt_repository:
-        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main'
-        state: present
-        mode: '0644'
-      when: ansible_distribution_release == 'buster'
-
-  tasks:
-    - name: enable passwordless sudo for user
-      copy:
-        content: |
-          user ALL=(ALL) NOPASSWD:ALL
-        dest: /etc/sudoers.d/user
-        validate: visudo -cf %s
-        mode: '0440'
-        backup: yes
+- import_playbook: distribute-ssh-keys.yml
+- import_playbook: syslog-to-graylog.yml
