@@ -12,6 +12,7 @@ Prequisites:
 
 
 Connect to servers:
+'''
     ansible -i ./inventory/hosts/ubuntu -m ping --user serveradmin --ask-pass
-
+'''
     
