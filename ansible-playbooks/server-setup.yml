@@ -1,0 +1,99 @@
+#
+# ASUS LAPTOP (UL80 AKA LAPTOPMINI)
+#
+
+- hosts: laptopmini:!unreachable
+  name: laptopmini
+  become: yes
+  roles:
+    - role: server
+    - role: upgrade
+    - role: smarttest
+
+    - role: aptrepo
+      aptrepo_url: http://dl.google.com/linux/chrome/deb/
+      aptrepo_params:
+        Suites: stable
+      aptrepo_source_file: /etc/apt/sources.list.d/google-chrome.sources
+      aptrepo_key_url: https://dl.google.com/linux/linux_signing_key.pub
+      aptrepo_key_file: /usr/share/keyrings/google-archive-keyring.gpg
+
+    - role: packages
+      packages_install:
+        # Interactive shell
+        - git
+        - make
+        - curl
+        - tree
+        - asciinema
+
+        # System administration
+        - ansible
+        - sshpass  # required to deploy new bare metal hosts with Ansible
+        - nmap
+        - psmisc
+        - smartmontools
+        - sysbench  # buster-backports
+        - iotop
+        - iperf3
+        - rsync
+        - nfs-common
+        - cu  # tty console client
+
+    - role: interactive
+      interactive_user: user
+
+    - role: munin_node
+    - role: munin_smart
+      munin_smart_params: 5 187 197 198  # 188 is meaningless for this drive
+
+    - role: grub
+      grub_kernel_params:
+        # Boot time user facing output
+        - quiet
+        - splash
+        # Low RAM workaround
+        - zswap.enabled=1
+        - zswap.compressor=lz4
+        - zswap.zpool=z3fold
+        - zswap.max_pool_percent=40
+        # Attempt to fix Ethernet errors after suspend
+        # https://www.linux.org.ru/forum/general/15842902
+        - irqpoll
+    - role: initrd
+      modules:
+        # Intel kernel modesetting in initramfs
+        - intel_agp
+        - drm
+        - i915 modeset=1
+        # Enable zswap
+        - lz4
+        - lz4_compress
+        - z3fold
+
+    # Strict ssh key management
+    - role: sshkey
+
+  pre_tasks:
+    - name: enable non-free repository
+      apt_repository:
+        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }} main contrib non-free'
+        state: present
+        mode: '0644'
+
+    - name: enable backports repo
+      apt_repository:
+        repo: 'deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main'
+        state: present
+        mode: '0644'
+      when: ansible_distribution_release == 'buster'
+
+  tasks:
+    - name: enable passwordless sudo for user
+      copy:
+        content: |
+          user ALL=(ALL) NOPASSWD:ALL
+        dest: /etc/sudoers.d/user
+        validate: visudo -cf %s
+        mode: '0440'
+        backup: yes
