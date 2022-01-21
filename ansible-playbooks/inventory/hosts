@@ -1,2 +1,5 @@
 [ubuntu]
 helm-pop
+jellyfin
+
+[raspberrypi]
