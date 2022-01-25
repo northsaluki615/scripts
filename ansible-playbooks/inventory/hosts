@@ -1,10 +1,48 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
 [ubuntu]
 helm-pop
-jellyfin
+jellyfin.helmersnet.local ansible_user=jellyfin
 helmdock
+helmpop
+helmdock
+helmmoat
+192.168.1.104 ansible_user=mike
+
+[debian]
+helmserver
 
 [raspberrypi]
 torrentpi
+homeassistant
+mediapi
+torrentpi
+webserverpi
 
-[all:vars]
-ansible_python_interpreter=/usr/bin/python3
+[proxmox]
+minecraft
+helm-media
+helmlog
+helmapp
+jellyfin.helmersnet.local
+helmdock
+
+[iot]
+Lyric-3A9D72
+Chromecast
+Roomba-3192802000442700
+HelmersVizioBar
+Google-Home-Mini
+range
+amazon-echo
+
+[desktop]
+helmpop
+
+[infrastructure]
+HelmersNetSwitch
+stairwell-ap
+HelmersFi-CloudKey
+livingroom_ap
+PoE_switch
