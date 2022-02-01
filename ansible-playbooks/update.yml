@@ -11,14 +11,14 @@
         autoclean: yes
       #purge: yes
 
-- name: "Update Containers"
-  hosts: docker
-  gather_facts: no
-  become: yes
-  tasks:
-    - name: "Running Watchtower Container"
-      shell: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once --cleanup"
-      register: shell_output
-      changed_when: shell_output.stderr_lines|length > 1
-    - debug:
-        var: shell_output.stderr_lines
+#- name: "Update Containers"
+#  hosts: docker
+#  gather_facts: no
+#  become: yes
+#  tasks:
+#    - name: "Running Watchtower Container"
+#     shell: "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --run-once --cleanup"
+#     register: shell_output
+#      changed_when: shell_output.stderr_lines|length > 1
+#    - debug:
+#        var: shell_output.stderr_lines

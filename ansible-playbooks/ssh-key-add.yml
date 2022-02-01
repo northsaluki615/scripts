@@ -1,0 +1,24 @@
+---
+# To run: ansible-playbook -i ./ssh-key-add.yml --ask-pass --extra-vars='pubkey="<pubkey>"'
+- hosts: pihole
+  become: true
+  vars_files: pw-def
+  tasks:
+  - name: Creating user m_helm with admin access
+    user: 
+      name: m_helm
+      password: "{{ default_password | password_hash('sha512','A512') }}"
+      groups: admin append=yes
+    when:  assigned_role  == "yes"
+  - name: make direcotry
+    file:
+      path: "/home/m_helm/.ssh"
+      state: directory
+  - name: create empty file
+    file:
+      path: "/home/m_helm/.ssh/authorized_keys"
+      state: touch
+  - name: put pubkey
+    lineinfile:
+      path: "/home/m_helm/.ssh/authorized_keys"
+      line: "{{ pubkey }}"
