@@ -1,48 +1,35 @@
-[all:vars]
-ansible_python_interpreter=/usr/bin/python3
+[pihole]
+192.168.1.73
 
-[ubuntu]
-helm-pop
-jellyfin.helmersnet.local ansible_user=jellyfin
-helmdock
-helmpop
-helmdock
-helmmoat
-192.168.1.104 ansible_user=mike
-
-[debian]
-helmserver
+[vmachines]
+192.168.1.210
+192.168.1.128
+192.168.1.73
 
 [raspberrypi]
-torrentpi
-homeassistant
-mediapi
-torrentpi
-webserverpi
+192.168.1.102
 
-[proxmox]
-minecraft
-helm-media
-helmlog
-helmapp
-jellyfin.helmersnet.local
-helmdock
+[docker]
+192.168.1.210
+192.168.1.128
 
-[iot]
-Lyric-3A9D72
-Chromecast
-Roomba-3192802000442700
-HelmersVizioBar
-Google-Home-Mini
-range
-amazon-echo
+[ubuntu]
+192.168.1.73
+192.168.1.103
+192.168.1.124
+192.168.1.128 ansible_user=jellyfin
+192.168.1.210
 
-[desktop]
-helmpop
+[nextcloud]
+192.168.1.103
 
-[infrastructure]
-HelmersNetSwitch
-stairwell-ap
-HelmersFi-CloudKey
-livingroom_ap
-PoE_switch
+[lxc_containers]
+192.168.1.128
+
+[webserver]
+192.168.1.102
+
+[matrixserver]
+
+[testing]
+192.168.1.91
